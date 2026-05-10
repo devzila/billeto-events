@@ -6,6 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Billetto Events">
     <meta name="mobile-web-app-capable" content="yes">
+    <% if Clerk.configuration.publishable_key.present? %>
+      <%= tag.meta name: "clerk-publishable-key", content: Clerk.configuration.publishable_key %>
+      <%= tag.meta name: "clerk-after-auth-redirect-url", content: root_url %>
+    <% end %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -24,7 +28,51 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-controller="clerk-auth">
+    <header class="border-bottom bg-white shadow-sm">
+      <nav class="navbar navbar-expand py-2">
+        <div class="container">
+          <%= link_to "Billetto Events", root_path, class: "navbar-brand fw-semibold text-body text-decoration-none mb-0" %>
+          <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
+            <% if clerk_signed_in? %>
+              <span class="navbar-text small text-muted"><%= clerk_display_label %></span>
+              <%= button_tag "Sign out", type: "button", class: "btn btn-outline-secondary btn-sm", data: { action: "click->clerk-auth#signOut" } %>
+            <% else %>
+              <%= button_tag "Log in", type: "button", class: "btn btn-primary btn-sm", data: { action: "click->clerk-auth#headerSignIn" } %>
+              <%= button_tag "Sign up", type: "button", class: "btn btn-outline-secondary btn-sm", data: { action: "click->clerk-auth#headerSignUp" } %>
+            <% end %>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <% flash.each do |type, message| %>
+      <% next if message.blank? %>
+      <% alert_class =
+           case type.to_s
+           when "notice" then "success"
+           when "alert" then "danger"
+           else "info"
+           end %>
+      <div class="alert alert-<%= alert_class %> m-3 mb-0 shadow-sm" role="alert">
+        <%= message %>
+      </div>
+    <% end %>
     <%= yield %>
+    <% unless clerk_signed_in? %>
+      <div
+        class="d-none position-fixed top-0 start-0 w-100 h-100 justify-content-center align-items-center p-3 bg-dark bg-opacity-50"
+        style="z-index: 1060;"
+        data-clerk-auth-target="backdrop"
+        data-action="click->clerk-auth#backdropClose">
+        <div class="bg-white rounded-3 shadow p-4 w-100" style="max-width: 28rem;" role="dialog" aria-modal="true" aria-labelledby="clerk-vote-auth-title">
+          <h2 id="clerk-vote-auth-title" class="h5 mb-2">Sign in to vote</h2>
+          <p class="text-muted small mb-4">Log in or create a Clerk account to upvote and downvote events.</p>
+          <div class="d-grid gap-2">
+            <button type="button" class="btn btn-primary" data-action="click->clerk-auth#signIn">Log in</button>
+            <button type="button" class="btn btn-outline-secondary" data-action="click->clerk-auth#signUp">Sign up</button>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </body>
 </html>
