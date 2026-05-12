@@ -11,15 +11,32 @@ class EventsController < ApplicationController
   end
 
   def upvote
-    event = Event.find(params[:id])
-    event.apply_vote_toggle!(clerk_user_id: clerk.user_id, direction: :up)
+    Rails.configuration.event_store.publish(
+      Vote::VoteEvent.new(
+        data: {
+          event_id: params[:id],
+          clerk_user_id: current_clerk_user.id,
+          vote_type: EventVote::VoteType::UPVOTE
+        },
+        metadata: {
+          ip: Current.request_ip
+        }
+      )
+    )
 
     redirect_to events_path(page: params[:page]), notice: "Thanks for your vote."
   end
 
   def downvote
-    event = Event.find(params[:id])
-    event.apply_vote_toggle!(clerk_user_id: clerk.user_id, direction: :down)
+    Rails.configuration.event_store.publish(
+      Vote::VoteEvent.new(
+        data: {
+          event_id: params[:id],
+          clerk_user_id: current_clerk_user.id,
+          vote_type: EventVote::VoteType::DOWNVOTE
+        }
+      )
+    )
 
     redirect_to events_path(page: params[:page]), notice: "Thanks for your vote."
   end
