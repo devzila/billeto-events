@@ -11,6 +11,8 @@ class EventsController < ApplicationController
   end
 
   def upvote
+    puts params.inspect
+    puts "================================================"
     Vote::VoteEvent.new(
       event_id: params[:id],
       clerk_user_id: current_clerk_user.id,
@@ -18,18 +20,18 @@ class EventsController < ApplicationController
       ip: Current.request_ip
     ).call
 
-    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote."
+    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote.", status: :see_other
   end
 
   def downvote
-      Vote::VoteEvent.new(
-          event_id: params[:id],
-          clerk_user_id: current_clerk_user.id,
-          vote_type: EventVote.vote_types[:downvote],
-          ip: Current.request_ip
-        ).call
+    Vote::VoteEvent.new(
+      event_id: params[:id],
+      clerk_user_id: current_clerk_user.id,
+      vote_type: EventVote.vote_types[:downvote],
+      ip: Current.request_ip
+    ).call
 
-    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote."
+    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote.", status: :see_other
   end
 
   private

@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   include Clerk::Authenticatable
 
-  helper_method :clerk_display_label, :clerk_signed_in?
+  helper_method :clerk_display_label, :clerk_signed_in?, :current_clerk_user
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -25,6 +25,10 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def current_clerk_user
+    clerk.user
+  end
 
   def clerk_signed_in?
     clerk.user_id.present?
