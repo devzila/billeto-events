@@ -53,8 +53,10 @@
            when "alert" then "danger"
            else "info"
            end %>
-      <div class="alert alert-<%= alert_class %> m-3 mb-0 shadow-sm" role="alert">
-        <%= message %>
+      <div class="container py-3">
+        <div class="alert alert-<%= alert_class %> shadow border-0 mb-0 fs-5 fw-semibold text-center" role="status" aria-live="polite">
+          <%= message %>
+        </div>
       </div>
     <% end %>
     <%= yield %>

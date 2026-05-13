@@ -11,27 +11,25 @@ class EventsController < ApplicationController
   end
 
   def upvote
-    puts params.inspect
-    puts "================================================"
-    Vote::VoteEvent.new(
-      event_id: params[:id],
-      clerk_user_id: current_clerk_user.id,
-      vote_type: EventVote.vote_types[:upvote],
-      ip: Current.request_ip
-    ).call
-
-    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote.", status: :see_other
+    redirect_after_vote(
+      Vote::VoteEvent.new(
+        event_id: params[:id],
+        clerk_user_id: current_clerk_user.id,
+        vote_type: EventVote.vote_types[:upvote],
+        ip: '127.0.0.1'
+      ).call
+    )
   end
 
   def downvote
-    Vote::VoteEvent.new(
-      event_id: params[:id],
-      clerk_user_id: current_clerk_user.id,
-      vote_type: EventVote.vote_types[:downvote],
-      ip: Current.request_ip
-    ).call
-
-    redirect_to events_path(page: params[:page]), notice: "Thanks for your vote.", status: :see_other
+    redirect_after_vote(
+      Vote::VoteEvent.new(
+        event_id: params[:id],
+        clerk_user_id: current_clerk_user.id,
+        vote_type: EventVote.vote_types[:downvote],
+        ip: '127.0.0.1'
+      ).call
+    )
   end
 
   private
@@ -40,5 +38,18 @@ class EventsController < ApplicationController
     return if clerk_signed_in?
 
     redirect_to events_path(page: params[:page]), alert: "Sign in with Clerk to vote on events."
+  end
+
+  def redirect_after_vote(changed)
+    notice =
+      if changed
+        "Your vote has been logged."
+      else
+        "That vote is already recorded for this event."
+      end
+
+    redirect_to events_path(page: params[:page], anchor: "event_#{params[:id]}"),
+      notice: notice,
+      status: :see_other
   end
 end

@@ -1,5 +1,5 @@
 <% events.each do |event| %>
-  <div class="col-md-6 col-lg-4">
+  <div id="<%= dom_id(event) %>" class="col-md-6 col-lg-4" style="scroll-margin-top: 5rem;">
     <div class="card h-100 shadow-sm">
       <% if event.image_url %>
         <img src="<%= event.image_url %>" class="card-img-top" alt="<%= event.name %>" style="height: 200px; object-fit: cover;">
